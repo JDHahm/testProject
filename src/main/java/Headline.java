@@ -10,9 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Headline {
 
-    /*
-    자비스앤빌런스(삼쩜삼) 4번 과제
-     */
+   
 
 
     public static ChromeDriver driver;
