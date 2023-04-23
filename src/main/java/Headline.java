@@ -23,25 +23,26 @@ public class Headline {
 
     public static ArrayList<WebElement> newsGroupList = new ArrayList<>();
 
-    public static WebElement headLine;
-    public static WebElement link;
+    public static WebElement headLine; // 기사 제목
 
-    public static ArrayList<WebElement> pageNumberList = new ArrayList<>();
 
-    public static List<String> dataLines = new ArrayList<>();
+    public static ArrayList<WebElement> pageNumberList = new ArrayList<>(); // 네이버 기사 페이지 1, 2, 3... 을 담기 위한 배열
+
+    public static List<String> dataLines = new ArrayList<>(); // 기사 제목과 링크를 담기 위한 배열
 
 
 
     public static void main(String[] args) {
         setUp();
-        getHeadline(2);
+        getHeadline("chatGPT",10); // 페이지 2개 긁어오기
         exportCSV(dataLines);
     }
 
 
 
     public static void setUp () {
-        System.setProperty("webdriver.chrome.driver", "/Users/jd/Desktop/chromedriver");
+        // 크롬 웹드라이버 셋업 환경 설정
+        System.setProperty("webdriver.chrome.driver", "/Users/jd/Desktop/chromedriver"); // 드라이버 경로 수정 필요
 
 
         // 크롬버전 111로 올라가면서 WARNING: Invalid Status code=403 text=Forbidden 에러 처리
@@ -52,9 +53,9 @@ public class Headline {
 
     }
 
-    public static void getHeadline(int numberOfPage) {
-        //파라미터로 받은 numberOfPage 만큼의 갯수만큼 헤드라인 긁어오기
-        //해당 메소드는 5를 넘어가면 동작하지 않음
+    public static void getHeadline(String searchWord, int numberOfPage) {
+        //파라미터로 받은 searchWord를 네이버에서 검색하고,
+        // 뉴스 -> 최신순 탭으로가서 numberOfPage 만큼의 갯수만큼 헤드라인 긁어오기 (cf. 5를 입력시 최신순으로 5페이지까지 뉴스를 헤드라인을 전부 긁어옴)
         driver.manage().window().maximize();
 
         //검색바 클릭
@@ -63,12 +64,20 @@ public class Headline {
 
         //키보드 입력
         Actions action = new Actions(driver);
-        action.sendKeys("삼쩜삼")
+        action.sendKeys(searchWord)
                 .sendKeys(Keys.ENTER)
                 .perform();
 
         //뉴스탭 접근
-        newsButton = driver.findElement(By.cssSelector("#lnb > div.lnb_group > div > ul > li:nth-child(3)"));
+        //검색어에 따라 뉴스탭 인덱스가 바뀜 (노출 메뉴는 총 10개 고정)
+        // "#lnb > div.lnb_group > div > ul > li:nth-child(1) > a" -> 첫번째 탭
+        for (int i = 1; i <= 10; i++ ) {
+            // 노출 메뉴가 10개 고정이므로, 10으로 픽스
+            newsButton = driver.findElement(By.cssSelector("#lnb > div.lnb_group > div > ul > li:nth-child("+i+") > a"));
+            if (newsButton.getText().equals("뉴스")) {
+                break;
+            }
+        }
         newsButton.click();
 
         //최신 순으로 정렬
@@ -91,12 +100,17 @@ public class Headline {
 //            System.out.println(name);
 //
 //        }
-
         int plusIndex = 0; // 1페이지 10개, 2페이지 10개....
         for(int pageIndex = 1; pageIndex <= numberOfPage; pageIndex++) {
 
-            // 페이지 넘버 pageNumber 1,2,3,4....
+            // 페이지 넘버 pageNumber 1,2,3,4....를 돌면서 기사 헤드라인 긁어오기
             WebElement pageNumber = driver.findElement(By.xpath("//*[@id=\"main_pack\"]/div[2]/div/div/a["+pageIndex+"]"));
+
+            // 5번째 페이지 이상으로 가면 pageIndex는 고정
+            if (pageIndex >= 6) {
+                pageNumber =  driver.findElement(By.xpath("//*[@id=\"main_pack\"]/div[2]/div/div/a[6]\n"));
+            }
+
             pageNumber.click();
 
             for (int i =1; i <= newsGroupList.size(); i++) {
@@ -119,6 +133,11 @@ public class Headline {
         }
 
         driver.close(); // 브라우져 종료
+
+
+        //*[@id="main_pack"]/div[2]/div/div/a[5]
+        //*[@id="main_pack"]/div[2]/div/div/a[5]
+        //*[@id="main_pack"]/div[2]/div/div/a[6]
 
 
 
