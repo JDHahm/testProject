@@ -32,7 +32,7 @@ public class Headline {
 
     public static void main(String[] args) {
         setUp();
-        getHeadline("chatGPT",10); // 페이지 2개 긁어오기
+        getHeadline("삼쩜삼",2); // 페이지 2개 긁어오기
         exportCSV(dataLines);
     }
 
